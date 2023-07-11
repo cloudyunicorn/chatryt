@@ -8,11 +8,113 @@ import { IoClose, IoLogOutOutline } from 'react-icons/io5';
 import { MdPhotoCamera, MdAddAPhoto, MdDeleteForever } from 'react-icons/md';
 import { BsFillCheckCircleFill } from 'react-icons/bs';
 import { profileColors } from '@/utils/constants';
+import { toast } from 'react-toastify';
+import ToastMessage from './ToastMessage';
+import { doc, updateDoc } from 'firebase/firestore';
+import { auth, db, storage } from '@/firebase/firebase';
+import { updateProfile } from 'firebase/auth';
+import { getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage';
 
 const LeftNav = () => {
   const [editProfile, setEditProfile] = useState(true);
   const [nameEdited, setNameEdited] = useState(false);
-  const { currentUser, signOut } = useAuth();
+  const { currentUser, signOut, setCurrentUser } = useAuth();
+
+  const authUser = auth.currentUser;
+
+  const uploadImageToFirestore = (file) => {
+    try {
+      if (file) {
+        const storageRef = ref(storage, currentUser.displayName);
+
+        const uploadTask = uploadBytesResumable(storageRef, file);
+
+        uploadTask.on(
+          'state_changed',
+          (snapshot) => {
+            const progress =
+              (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            console.log('Upload is ' + progress + '% done');
+            switch (snapshot.state) {
+              case 'paused':
+                console.log('Upload is paused');
+                break;
+              case 'running':
+                console.log('Upload is running');
+                break;
+            }
+          },
+          (error) => {
+            console.error(error);
+          },
+          () => {
+            getDownloadURL(uploadTask.snapshot.ref).then(
+              async (downloadURL) => {
+                console.log('File available at', downloadURL);
+                handleUpdateProfile('photo', downloadURL);
+                await updateProfile(authUser, {
+                  photoURL: downloadURL,
+                });
+              }
+            );
+          }
+        );
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleUpdateProfile = (type, value) => {
+    let obj = { ...currentUser };
+    switch (type) {
+      case 'color':
+        obj.color = value;
+        break;
+      case 'name':
+        obj.displayName = value;
+        break;
+      case 'photo':
+        obj.photoURL = value;
+        break;
+      case 'photo-remove':
+        obj.photoURL = null;
+        break;
+      default:
+        break;
+    }
+    try {
+      toast.promise(
+        async () => {
+          const userDocRef = doc(db, 'users', currentUser.uid);
+          await updateDoc(userDocRef, obj);
+          setCurrentUser(obj);
+
+          if (type === 'photo-remove') {
+            await updateProfile(authUser, {
+              photoURL: null,
+            });
+          }
+          if (type === 'name') {
+            await updateProfile(authUser, {
+              displayName: value,
+            });
+            setNameEdited(false);
+          }
+        },
+        {
+          pending: 'Updating profile',
+          success: 'Profile updated successfully',
+          error: 'Profile update failed',
+        },
+        {
+          autoClose: 3000,
+        }
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const onkeydown = (event) => {
     if (event.key === 'Enter' && event.keyCode === 13) {
@@ -30,6 +132,7 @@ const LeftNav = () => {
   const editProfileContainer = () => {
     return (
       <div className="relative flex flex-col items-center">
+        <ToastMessage />
         <Icon
           size="small"
           className="absolute top-0 right-5 hover:bg-c2"
@@ -48,13 +151,18 @@ const LeftNav = () => {
             <input
               type="file"
               id="fileUpload"
-              onChange={(e) => {}}
+              onChange={(e) => uploadImageToFirestore(e.target.files[0])}
               style={{ display: 'none' }}
             />
           </div>
 
           {currentUser.photoURL && (
-            <div className="w-6 h-6 rounded-full bg-red-500 flex justify-center items-center absolute right-0 bottom-0">
+            <div
+              className="w-6 h-6 rounded-full bg-red-500 flex justify-center items-center absolute right-0 bottom-0"
+              onClick={() => {
+                handleUpdateProfile('photo-remove');
+              }}
+            >
               <MdDeleteForever size={14} />
             </div>
           )}
@@ -65,7 +173,12 @@ const LeftNav = () => {
             {nameEdited && (
               <BsFillCheckCircleFill
                 className="text-c4 cursor-pointer"
-                onClick={() => {}}
+                onClick={() =>
+                  handleUpdateProfile(
+                    'name',
+                    document.getElementById('displayNameEdit').innerText
+                  )
+                }
               />
             )}
             <div
@@ -86,6 +199,9 @@ const LeftNav = () => {
               key={index}
               className="w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition-transform hover:scale-125"
               style={{ backgroundColor: color }}
+              onClick={() => {
+                handleUpdateProfile('color', color);
+              }}
             >
               {color === currentUser.color && <BiCheck size={24} />}
             </span>
