@@ -1,10 +1,13 @@
-import { UserProvider } from "@/context/authContext"
-import '@/styles/globals.css'
+import { UserProvider } from '@/context/authContext';
+import { ChatContextProvider } from '@/context/chatContext';
+import '@/styles/globals.css';
 
 export default function App({ Component, pageProps }) {
   return (
     <UserProvider>
-      <Component {...pageProps} />
+      <ChatContextProvider>
+        <Component {...pageProps} />
+      </ChatContextProvider>
     </UserProvider>
-  )
+  );
 }

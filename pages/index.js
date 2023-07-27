@@ -1,20 +1,26 @@
-import LeftNav from "@/components/LeftNav"
-import Loader from "@/components/Loader"
-import { useAuth } from "@/context/authContext"
-import { useRouter } from "next/router"
-import React, { useEffect } from 'react'
+import Chat from '@/components/Chat';
+import Chats from '@/components/Chats';
+import LeftNav from '@/components/LeftNav';
+import Loader from '@/components/Loader';
+import { useAuth } from '@/context/authContext';
+import { useChatContext } from '@/context/chatContext';
+import { useRouter } from 'next/router';
+import React, { useEffect } from 'react';
 
 const Home = () => {
-  const router = useRouter()
-  const {signOut, currentUser, isLoading} = useAuth()
+  const router = useRouter();
+  const { signOut, currentUser, isLoading } = useAuth();
+  const { data } = useChatContext();
 
   useEffect(() => {
-    if(!isLoading && !currentUser) {
-      router.push("/login")
+    if (!isLoading && !currentUser) {
+      router.push('/login');
     }
-  }, [currentUser, isLoading])
+  }, [currentUser, isLoading]);
 
-  return !currentUser ? (<Loader />) : (
+  return !currentUser ? (
+    <Loader />
+  ) : (
     // <div>
     //   <button onClick={signOut}>Sign Out</button>
     // </div>
@@ -22,12 +28,16 @@ const Home = () => {
       <div className="flex w-full shrink-0">
         <LeftNav />
         <div className="flex bg-c2 grow">
-          <div>Sidebar</div>
-          <div>Chat</div>
+          <div className="w-[400px] p-5 overflow-auto scrollbar shrink-0 border-r border-white/[0.05]">
+            <div className="flex flex-col h-full">
+              <Chats />
+            </div>
+          </div>
+          {data.user && <Chat />}
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Home
+export default Home;
