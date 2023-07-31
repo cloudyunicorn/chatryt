@@ -119,8 +119,7 @@ const Search = () => {
       {user && (
         <>
           <div
-            className="flex items-center gap-4 rounded-xl hover:bg-c5 py-2 px-4 cursor-pointer"
-            key={user.uid}
+            className="mt-5 flex items-center gap-4 rounded-xl hover:bg-c5 py-2 px-4 cursor-pointer"
             onClick={() => handleSelect(user)}
           >
             <Avatar size="large" user={user} />

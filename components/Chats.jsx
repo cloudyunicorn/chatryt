@@ -11,10 +11,10 @@ const Chats = () => {
   const {
     users,
     setUsers,
-    chats,
-    setChats,
     selectedChat,
     setSelectedChat,
+    chats,
+    setChats,
     dispatch,
   } = useChatContext();
   const [search, setSearch] = useState('');
@@ -28,6 +28,7 @@ const Chats = () => {
       const updatedUsers = {};
       snapshot.forEach((doc) => {
         updatedUsers[doc.id] = doc.data();
+        console.log(doc.data())
       });
       setUsers(updatedUsers);
       if (!isBlockExecutedRef.current) {
@@ -48,7 +49,7 @@ const Chats = () => {
             users
           ) {
             const firstChat = Object.values(data).sort(
-              (a, b) => b.data - a.data
+              (a, b) => b.date - a.date
             )[0];
 
             if (firstChat) {
@@ -105,14 +106,15 @@ const Chats = () => {
             );
             const date = timestamp.toDate();
             const user = users[chat[1].userInfo.uid];
+            console.log(filteredChats)
 
             return (
               <li
+                key={chat[0]}
+                onClick={() => handleSelect(user, chat[0])}
                 className={`h-[90px] flex items-center gap-4 rounded-3xl hover:bg-c1 p-4 cursor-pointer ${
                   selectedChat?.uid === user?.uid ? 'bg-c1' : ''
                 }`}
-                key={chat[0]}
-                onClick={() => handleSelect(user, chat[0])}
               >
                 <Avatar size="x-large" user={user} />
                 <div className="flex flex-col gap-1 grow relative">

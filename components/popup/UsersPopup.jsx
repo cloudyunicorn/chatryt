@@ -3,6 +3,7 @@ import PopupWrapper from './PopupWrapper';
 import { useAuth } from '@/context/authContext';
 import { useChatContext } from '@/context/chatContext';
 import Avatar from '../Avatar';
+import {v4 as uuid} from 'uuid'
 import {
   doc,
   getDoc,
@@ -81,7 +82,7 @@ const UsersPopup = (props) => {
             Object.values(users).map((user) => (
               <div
                 className="flex items-center gap-4 rounded-xl hover:bg-c5 py-2 px-4 cursor-pointer"
-                key={user.displayName}
+                key={uuid()}
                 onClick={() => handleSelect(user)}
               >
                 <Avatar
