@@ -1,6 +1,15 @@
 import { useChatContext } from '@/context/chatContext';
 import { db } from '@/firebase/firebase';
-import { Timestamp, collection, doc, onSnapshot } from 'firebase/firestore';
+import {
+  Timestamp,
+  collection,
+  doc,
+  getDoc,
+  onSnapshot,
+  query,
+  updateDoc,
+  where,
+} from 'firebase/firestore';
 import React, { useEffect, useRef, useState } from 'react';
 import { RiSearch2Line } from 'react-icons/ri';
 import Avatar from './Avatar';
@@ -16,19 +25,26 @@ const Chats = () => {
     chats,
     setChats,
     dispatch,
+    data,
+    resetFooterStates,
   } = useChatContext();
   const [search, setSearch] = useState('');
+  const [unreadMsgs, setUnreadMsgs] = useState({});
   const { currentUser } = useAuth();
 
   const isBlockExecutedRef = useRef(false);
   const isUsersFetchedRef = useRef(false);
 
   useEffect(() => {
+    resetFooterStates();
+  }, [data?.chatId]);
+
+  useEffect(() => {
     onSnapshot(collection(db, 'users'), (snapshot) => {
       const updatedUsers = {};
       snapshot.forEach((doc) => {
         updatedUsers[doc.id] = doc.data();
-        console.log(doc.data())
+        console.log(doc.data());
       });
       setUsers(updatedUsers);
       if (!isBlockExecutedRef.current) {
@@ -36,6 +52,34 @@ const Chats = () => {
       }
     });
   }, []);
+
+  useEffect(() => {
+    const documentIds = Object.keys(chats);
+    if (documentIds.length === 0) return;
+    const q = query(
+      collection(db, 'chats'),
+      where('__name__', 'in', documentIds)
+    );
+    const unsub = onSnapshot(q, (snapshot) => {
+      let msgs = {};
+      snapshot.forEach((doc) => {
+        if (doc.id !== data.chatId) {
+          msgs[doc.id] = doc
+            .data()
+            .messages.filter(
+              (m) => m?.read === false && m?.sender !== currentUser.uid
+            );
+        }
+        Object.keys(msgs || {}).map((c) => {
+          if (msgs[c]?.length < 1) {
+            delete msgs[c];
+          }
+        });
+      });
+      setUnreadMsgs(msgs);
+    });
+    return () => unsub();
+  }, [chats, selectedChat]);
 
   useEffect(() => {
     const getChats = () => {
@@ -79,9 +123,28 @@ const Chats = () => {
     .sort((a, b) => b[1].date - a[1].date);
   console.log(filteredChats);
 
+  const readChat = async (chatId) => {
+    const chatRef = doc(db, 'chats', chatId);
+    const chatDoc = await getDoc(chatRef);
+
+    let updatedMessages = chatDoc.data().messages.map((m) => {
+      if (m?.read === false) {
+        m.read = true;
+      }
+      return m;
+    });
+    await updateDoc(chatRef, {
+      messages: updatedMessages,
+    });
+  };
+
   const handleSelect = (user, selectedChatId) => {
     setSelectedChat(user);
     dispatch({ type: 'CHANGE_USER', payload: user });
+
+    if (unreadMsgs?.[selectedChatId]?.length > 0) {
+      readChat(selectedChatId);
+    }
   };
 
   return (
@@ -106,7 +169,7 @@ const Chats = () => {
             );
             const date = timestamp.toDate();
             const user = users[chat[1].userInfo.uid];
-            console.log(filteredChats)
+            console.log(filteredChats);
 
             return (
               <li
@@ -127,9 +190,11 @@ const Chats = () => {
                       (chat[1]?.lastMessage?.img && 'image') ||
                       'send first message'}
                   </p>
-                  <span className="absolute right-0 top-7 min-w-[20px] h-5 rounded-full bg-red-500 flex justify-center items-center text-sm">
-                    5
-                  </span>
+                  {!!unreadMsgs?.[chat[0]]?.length && (
+                    <span className="absolute right-0 top-7 min-w-[20px] h-5 rounded-full bg-red-500 flex justify-center items-center text-sm">
+                      {unreadMsgs?.[chat[0]]?.length}
+                    </span>
+                  )}
                 </div>
               </li>
             );
