@@ -3,8 +3,9 @@ import PopupWrapper from './PopupWrapper';
 import { useAuth } from '@/context/authContext';
 import { useChatContext } from '@/context/chatContext';
 import Avatar from '../Avatar';
-import {v4 as uuid} from 'uuid'
+import { v4 as uuid } from 'uuid';
 import {
+  deleteField,
   doc,
   getDoc,
   serverTimestamp,
@@ -12,7 +13,7 @@ import {
   updateDoc,
 } from 'firebase/firestore';
 import { db } from '@/firebase/firebase';
-import Search from "../Search";
+import Search from '../Search';
 
 const UsersPopup = (props) => {
   const { currentUser } = useAuth();
@@ -64,6 +65,9 @@ const UsersPopup = (props) => {
           [combinedId + '.date']: serverTimestamp(),
         });
       } else {
+        await updateDoc(doc(db, 'userChats', currentUser.uid), {
+          [combinedId + '.chatDeleted']: deleteField(),
+        });
       }
 
       dispatch({ type: 'CHANGE_USER', payload: user });
@@ -85,10 +89,7 @@ const UsersPopup = (props) => {
                 key={uuid()}
                 onClick={() => handleSelect(user)}
               >
-                <Avatar
-                  size="large"
-                  user={user}
-                />
+                <Avatar size="large" user={user} />
                 <div className="flex flex-col gap-1 grow">
                   <span className="text-base text-white flex items-center justify-between">
                     <div className="font-medium">{user.displayName}</div>
