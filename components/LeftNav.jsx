@@ -195,7 +195,7 @@ const LeftNav = () => {
           </div>
           <span className="text-c3 text-sm">{currentUser.email}</span>
         </div>
-        <div className="grid grid-cols-5 gap-4 mt-5">
+        <div className="grid grid-cols-5 gap-4 mt-5 sm:grid-cols-3">
           {profileColors.map((color, index) => (
             <span
               key={index}

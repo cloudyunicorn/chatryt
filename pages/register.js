@@ -1,14 +1,14 @@
-import Loader from "@/components/Loader";
+import Loader from '@/components/Loader';
 import { useAuth } from '@/context/authContext';
 import { auth, db } from '@/firebase/firebase';
-import { profileColors } from "@/utils/constants";
+import { profileColors } from '@/utils/constants';
 import {
   GoogleAuthProvider,
   createUserWithEmailAndPassword,
   signInWithPopup,
   updateProfile,
 } from 'firebase/auth';
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc } from 'firebase/firestore';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useEffect } from 'react';
@@ -39,7 +39,7 @@ const Register = () => {
     const displayName = e.target[0].value;
     const email = e.target[1].value;
     const password = e.target[2].value;
-    const colorIndex = Math.floor(Math.random() * profileColors.length)
+    const colorIndex = Math.floor(Math.random() * profileColors.length);
     try {
       const { user } = await createUserWithEmailAndPassword(
         auth,
@@ -47,20 +47,20 @@ const Register = () => {
         password
       );
 
-      await setDoc(doc(db, "users", user.uid), {
+      await setDoc(doc(db, 'users', user.uid), {
         uid: user.uid,
         displayName,
         email,
-        color: profileColors[colorIndex]
-      })
+        color: profileColors[colorIndex],
+      });
 
-      await setDoc(doc(db, "userChats", user.uid), {})
+      await setDoc(doc(db, 'userChats', user.uid), {});
 
       await updateProfile(user, {
-        displayName: displayName
-      })
+        displayName: displayName,
+      });
 
-      router.push("/")
+      router.push('/');
     } catch (error) {
       console.log(error);
     }
@@ -72,13 +72,14 @@ const Register = () => {
     <div className="h-[100vh] flex justify-center items-center bg-c1">
       <div className="flex items-center flex-col">
         <div className="text-center">
-          <div className="text-4xl font-bold">Create New Account</div>
-          <div className="mt-3 text-c3">
+          <div className="text-4xl font-bold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">Chatryt</div>
+          <div className="mb-10 text-c3">
             Connect and chat with anyone, anywhere
           </div>
+          <div className="text-4xl font-bold">Create New Account</div>
         </div>
-        <div className="flex items-center gap-2 w-full mt-10 mb-5">
-          <div className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 w-1/2 h-14 rounded-md cursor-pointer p-[1px]">
+        <div className="flex items-center gap-2 w-full mt-10 mb-5 sm:flex-col sm:gap-5">
+          <div className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 w-1/2 h-14 rounded-md cursor-pointer p-[1px] sm:w-3/4">
             <div
               className="flex items-center justify-center gap-3 text-white font-semibold bg-c1 w-full h-full rounded-md"
               onClick={signInWithGoogle}
@@ -87,7 +88,7 @@ const Register = () => {
               <span>Login with Google</span>
             </div>
           </div>
-          <div className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 w-1/2 h-14 rounded-md cursor-pointer p-[1px]">
+          <div className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 w-1/2 h-14 rounded-md cursor-pointer p-[1px] sm:w-3/4">
             <div className="flex items-center justify-center gap-3 text-white font-semibold bg-c1 w-full h-full rounded-md">
               <IoLogoFacebook size={24} />
               <span>Login with Facebook</span>
@@ -100,7 +101,7 @@ const Register = () => {
           <span className="w-5 h-[1px] bg-c3"></span>
         </div>
         <form
-          className="flex flex-col items-center gap-3 w-[500px] mt-5"
+          className="flex flex-col items-center gap-3 w-[500px] mt-5 sm:w-[80%]"
           onSubmit={handleSubmit}
         >
           <input

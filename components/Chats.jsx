@@ -15,6 +15,8 @@ import { RiSearch2Line } from 'react-icons/ri';
 import Avatar from './Avatar';
 import { useAuth } from '@/context/authContext';
 import { formatDate } from '@/utils/helpers';
+import Link from 'next/link';
+import { useMediaQuery } from 'react-responsive';
 
 const Chats = () => {
   const {
@@ -34,6 +36,8 @@ const Chats = () => {
 
   const isBlockExecutedRef = useRef(false);
   const isUsersFetchedRef = useRef(false);
+
+  const isMobile = useMediaQuery({ query: '(max-width: 639px)' });
 
   useEffect(() => {
     resetFooterStates();
@@ -168,46 +172,90 @@ const Chats = () => {
         />
       </div>
 
-      <ul className="flex flex-col w-full my-5 gap-[2px]">
-        {Object.keys(users || {}).length > 0 &&
-          filteredChats?.map((chat) => {
-            const timestamp = new Timestamp(
-              chat[1].date?.seconds,
-              chat[1].date?.nanoseconds
-            );
-            const date = timestamp.toDate();
-            const user = users[chat[1].userInfo.uid];
-            console.log(filteredChats);
+      {isMobile && (
+        <ul className="flex flex-col w-full my-5 gap-[2px]">
+          {Object.keys(users || {}).length > 0 &&
+            filteredChats?.map((chat) => {
+              const timestamp = new Timestamp(
+                chat[1].date?.seconds,
+                chat[1].date?.nanoseconds
+              );
+              const date = timestamp.toDate();
+              const user = users[chat[1].userInfo.uid];
+              console.log(filteredChats);
 
-            return (
-              <li
-                key={chat[0]}
-                onClick={() => handleSelect(user, chat[0])}
-                className={`h-[90px] flex items-center gap-4 rounded-3xl hover:bg-c1 p-4 cursor-pointer ${
-                  selectedChat?.uid === user?.uid ? 'bg-c1' : ''
-                }`}
-              >
-                <Avatar size="x-large" user={user} />
-                <div className="flex flex-col gap-1 grow relative">
-                  <span className="text-base text-white flex items-center justify-between">
-                    <div className="font-medium">{user?.displayName}</div>
-                    <div className="text-c3 text-xs">{formatDate(date)}</div>
-                  </span>
-                  <p className="text-sm text-c3 line-clamp-1 break-all">
-                    {chat[1]?.lastMessage?.text ||
-                      (chat[1]?.lastMessage?.img && 'image') ||
-                      'send first message'}
-                  </p>
-                  {!!unreadMsgs?.[chat[0]]?.length && (
-                    <span className="absolute right-0 top-7 min-w-[20px] h-5 rounded-full bg-red-500 flex justify-center items-center text-sm">
-                      {unreadMsgs?.[chat[0]]?.length}
+              return (
+                <li
+                  key={chat[0]}
+                  onClick={() => handleSelect(user, chat[0])}
+                  className={`h-[90px] flex items-center gap-4 rounded-3xl hover:bg-c1 p-4 cursor-pointer ${
+                    selectedChat?.uid === user?.uid ? 'bg-c1' : ''
+                  }`}
+                >
+                  <Avatar size="x-large" user={user} />
+                  <div className="flex flex-col gap-1 grow relative">
+                    <span className="text-base text-white flex items-center justify-between">
+                      <div className="font-medium">{user?.displayName}</div>
+                      <div className="text-c3 text-xs">{formatDate(date)}</div>
                     </span>
-                  )}
-                </div>
-              </li>
-            );
-          })}
-      </ul>
+                    <p className="text-sm text-c3 line-clamp-1 break-all">
+                      {chat[1]?.lastMessage?.text ||
+                        (chat[1]?.lastMessage?.img && 'image') ||
+                        'send first message'}
+                    </p>
+                    {!!unreadMsgs?.[chat[0]]?.length && (
+                      <span className="absolute right-0 top-7 min-w-[20px] h-5 rounded-full bg-red-500 flex justify-center items-center text-sm">
+                        {unreadMsgs?.[chat[0]]?.length}
+                      </span>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
+        </ul>
+      )}
+      {!isMobile && (
+        <ul className="flex flex-col w-full my-5 gap-[2px]">
+          {Object.keys(users || {}).length > 0 &&
+            filteredChats?.map((chat) => {
+              const timestamp = new Timestamp(
+                chat[1].date?.seconds,
+                chat[1].date?.nanoseconds
+              );
+              const date = timestamp.toDate();
+              const user = users[chat[1].userInfo.uid];
+              console.log(filteredChats);
+
+              return (
+                <li
+                  key={chat[0]}
+                  onClick={() => handleSelect(user, chat[0])}
+                  className={`h-[90px] flex items-center gap-4 rounded-3xl hover:bg-c1 p-4 cursor-pointer ${
+                    selectedChat?.uid === user?.uid ? 'bg-c1' : ''
+                  }`}
+                >
+                  <Avatar size="x-large" user={user} />
+                  <div className="flex flex-col gap-1 grow relative">
+                    <span className="text-base text-white flex items-center justify-between">
+                      <div className="font-medium">{user?.displayName}</div>
+                      <div className="text-c3 text-xs">{formatDate(date)}</div>
+                    </span>
+                    <p className="text-sm text-c3 line-clamp-1 break-all">
+                      {chat[1]?.lastMessage?.text ||
+                        (chat[1]?.lastMessage?.img && 'image') ||
+                        'send first message'}
+                    </p>
+                    {!!unreadMsgs?.[chat[0]]?.length && (
+                      <span className="absolute right-0 top-7 min-w-[20px] h-5 rounded-full bg-red-500 flex justify-center items-center text-sm">
+                        {unreadMsgs?.[chat[0]]?.length}
+                      </span>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
+        </ul>
+      )}
     </div>
   );
 };
