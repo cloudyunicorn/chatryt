@@ -5,12 +5,15 @@ import React, { useEffect, useRef, useState } from 'react';
 import Message from './Message';
 import { DELETED_FOR_ME } from '@/utils/constants';
 import { useAuth } from '@/context/authContext';
+import { useMediaQuery } from "react-responsive";
 
 const Messages = () => {
   const [messages, setMessages] = useState([]);
   const { data, setIsTyping } = useChatContext();
   const ref = useRef();
   const { currentUser } = useAuth();
+
+  const isMobile = useMediaQuery({ query: '(max-width: 639px)' });
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, 'chats', data.chatId), (doc) => {
@@ -32,7 +35,7 @@ const Messages = () => {
   };
 
   return (
-    <div ref={ref} className="grow p-5 overflow-auto scrollbar flex flex-col">
+    <div ref={ref} className={`${isMobile ? 'h-[75vh]' : 'grow overflow-auto scrollbar'} flex flex-col overflow-auto p-5`}>
       {messages
         ?.filter((m) => {
           return (

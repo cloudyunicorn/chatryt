@@ -11,7 +11,7 @@ import {
   updateDoc,
 } from 'firebase/firestore';
 import { getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage';
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { TbSend } from 'react-icons/tb';
 import { v4 as uuid } from 'uuid';
 
@@ -30,6 +30,11 @@ const Composebar = () => {
   } = useChatContext();
 
   const { currentUser } = useAuth();
+
+  const inputRef = useRef(null)
+  useEffect(() => {
+    inputRef.current.focus()
+  }, [])
 
   useEffect(() => {
     setInputText(editMessage?.text || '');
@@ -203,6 +208,7 @@ const Composebar = () => {
         value={inputText}
         onChange={handleTyping}
         onKeyUp={onkeyup}
+        ref={inputRef}
       />
       <button
         className={`h-10 w-10 rounded-xl shrink-0 flex justify-center items-center ${

@@ -15,12 +15,15 @@ import { auth, db, storage } from '@/firebase/firebase';
 import { updateProfile } from 'firebase/auth';
 import { getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage';
 import UsersPopup from "./popup/UsersPopup";
+import { useMediaQuery } from "react-responsive";
 
 const LeftNav = () => {
   const [usersPopup, setUsersPopup] = useState(false);
   const [editProfile, setEditProfile] = useState(false);
   const [nameEdited, setNameEdited] = useState(false);
   const { currentUser, signOut, setCurrentUser } = useAuth();
+
+  const isMobile = useMediaQuery({ query: '(max-width: 639px)' });
 
   const authUser = auth.currentUser;
 
@@ -216,7 +219,7 @@ const LeftNav = () => {
   return (
     <div
       className={`${
-        editProfile ? 'w-[350px]' : 'w-[80px] items-center'
+        editProfile ? 'w-[350px]' : (isMobile ? 'w-1/6 items-center' :'w-[80px] items-center')
       } flex flex-col justify-between py-5 shrink-0 transition-all`}
     >
       {editProfile ? (
